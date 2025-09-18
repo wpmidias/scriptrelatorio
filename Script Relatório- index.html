@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Sript Relatório</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: #e0e0e0;
+    }
+    .container {
+      background: #1b1f24;
+      padding: 25px 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
+      width: 380px;
+      text-align: center;
+      border: 1px solid rgba(0, 255, 170, 0.2);
+    }
+    h2 {
+      margin-bottom: 20px;
+      color: #00ffae;
+      text-transform: uppercase;
+      font-size: 22px;
+      letter-spacing: 1px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin: 12px 0 6px;
+      text-align: left;
+      color: #00ffc8;
+      font-size: 14px;
+    }
+    select, input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #2a2f36;
+      color: #e0e0e0;
+      outline: none;
+      transition: 0.2s;
+    }
+    select:focus, input:focus, textarea:focus {
+      border: 1px solid #00ffae;
+      box-shadow: 0 0 5px #00ffae;
+    }
+    button {
+      background: linear-gradient(90deg, #00ffae, #00b8ff);
+      color: #1b1f24;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 15px;
+      width: 100%;
+      transition: 0.2s;
+      text-transform: uppercase;
+    }
+    button:hover {
+      box-shadow: 0 0 15px #00ffae;
+      transform: scale(1.02);
+    }
+    textarea {
+      height: 120px;
+      resize: none;
+      font-family: monospace;
+      font-size: 13px;
+      background: #111417;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Script Relatório</h2>
+
+    <label>Cliente</label>
+    <select id="cliente">
+      <option>Carregando clientes...</option>
+    </select>
+
+    <label>Data Início</label>
+    <input type="date" id="dataInicio">
+
+    <label>Data Fim</label>
+    <input type="date" id="dataFim">
+
+    <button onclick="gerarMensagem()">Gerar Mensagem</button>
+    <textarea id="saida" readonly></textarea>
+  </div>
+
+  <script>
+    const selectCliente = document.getElementById("cliente");
+    const url = "https://api.allorigins.win/raw?url=" +
+      encodeURIComponent("https://docs.google.com/spreadsheets/d/1xqgZxhSeN93C1g3PIRlCmqCtsWTUbuIur3IwmkmZJlc/export?format=csv&gid=319322775");
+
+    // Carregar lista de clientes via AllOrigins
+    fetch(url)
+      .then(res => res.text())
+      .then(csv => {
+        const linhas = csv.split("\n").map(l => l.trim()).filter(l => l);
+        selectCliente.innerHTML = ""; // limpa opções
+        linhas.forEach(nome => {
+          if (nome) {
+            const option = document.createElement("option");
+            option.value = nome;
+            option.textContent = nome;
+            selectCliente.appendChild(option);
+          }
+        });
+      })
+      .catch(err => {
+        console.error("Erro ao carregar planilha:", err);
+        selectCliente.innerHTML = "<option>Erro ao carregar</option>";
+      });
+
+    // Função gerar mensagem
+    function gerarMensagem() {
+      const cliente = selectCliente.value;
+      const inicio = document.getElementById("dataInicio").value;
+      const fim = document.getElementById("dataFim").value;
+
+      if (!cliente || !inicio || !fim) {
+        alert("Preencha todos os campos.");
+        return;
+      }
+
+      const formatar = data => {
+        const [ano, mes, dia] = data.split("-");
+        return `${dia}/${mes}/${ano}`;
+      };
+
+      const msg = `/relatório ${cliente} ${formatar(inicio)} ${formatar(fim)}`;
+      document.getElementById("saida").value = msg;
+    }
+  </script>
+</body>
+</html>
